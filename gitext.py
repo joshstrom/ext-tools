@@ -126,7 +126,7 @@ def diff_branch():
     print("Done.")
 
 
-def add_remote():
+def push_remote():
     current_branch = get_current_branch_name()
     if has_remote_tracking_branch(current_branch):
         print("Current branch '" + current_branch + "' already has a remote tracking branch.")
@@ -198,7 +198,7 @@ def print_help():
     print("Supported commands:")
     print("\t checkout - Interactively checkout a different branch.")
     print("\t diffbranch - Diff the current branch against a target branch.")
-    print("\t addremote - Push the current (local only) branch to origin.")
+    print("\t pushremote - Push the current (local only) branch to origin.")
     print("\t hasremote - Check if the current branch has a tracking branch on origin.")
     print("\t insync - Shows details around branch synchronizing.")
     # print("\t pullremote - Pull a remote untracked branch.")
@@ -217,8 +217,8 @@ def main():
     if command == "diffbranch":
         diff_branch()
         return
-    if command == "addremote":
-        add_remote()
+    if command == "pushremote":
+        push_remote()
         return
     if command == "hasremote":
         check_has_remote()
