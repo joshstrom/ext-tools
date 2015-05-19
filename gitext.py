@@ -77,8 +77,8 @@ def select_branch():
     branch_num = -1
 
     while True:
-        user_input = input("\nSelect branch (q to cancel): ")
-        if user_input.lower() == "q":
+        user_input = str(input("\nSelect branch (q to cancel): ")).lower()
+        if user_input == "q":
             return None
         if not is_int(user_input):
             print("Invalid branch number.")
@@ -135,7 +135,7 @@ def push_remote():
 
     run_command = False
     while True:
-        user_input = input("Add remote tracking branch 'origin/" + current_branch + "'? (y/n): ").lower()
+        user_input = str(input("Add remote tracking branch 'origin/" + current_branch + "'? (y/n): ")).lower()
         if user_input == "y":
             run_command = True
             break
