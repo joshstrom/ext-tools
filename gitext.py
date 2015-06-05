@@ -1,3 +1,4 @@
+#! python3
 # Script to automate some Git tasks around branches.
 
 import sys
