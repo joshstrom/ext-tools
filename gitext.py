@@ -195,6 +195,10 @@ def is_in_sync():
     print("Done.")
 
 
+def print_version():
+    print("Git-ext tools v1.0")
+
+
 def print_help():
     print("Supported commands:")
     print("\t checkout - Interactively checkout a different branch.")
@@ -202,6 +206,8 @@ def print_help():
     print("\t pushremote - Push the current (local only) branch to origin.")
     print("\t hasremote - Check if the current branch has a tracking branch on origin.")
     print("\t insync - Shows details around branch synchronizing.")
+    print("\t help - Prints this message.")
+    print("\t version - Prints version of this tool.")
     # print("\t pullremote - Pull a remote untracked branch.")
 
 
@@ -212,6 +218,12 @@ def main():
         return
 
     command = commands[1]
+    if command == "help":
+        print_help()
+        return
+    if command == "version":
+        print_version()
+        return
     if command == "checkout":
         interactive_checkout()
         return
