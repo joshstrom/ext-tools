@@ -1,4 +1,4 @@
-#! python3
+#! /usr/bin/python3
 # Script to automate some Git tasks around branches.
 
 import sys
@@ -197,6 +197,7 @@ def is_in_sync():
 
 def print_version():
     print("Git-ext tools v1.0")
+    print("Python version: " + sys.version)
 
 
 def print_help():

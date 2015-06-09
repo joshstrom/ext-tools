@@ -1,11 +1,11 @@
 #! /bin/sh
 
 version() {
-	py gitext.py version
+	py $(where gitext.py) version
 }
 
 usage() {
-	py gitext.py help
+	py $(where gitext.py) help
 }
 
 main() {
@@ -24,7 +24,7 @@ main() {
             ;;
     esac
 
-   py gitext.py $subcommand
+   py $(where gitext.py) $subcommand
 }
 
 main "$@"
