@@ -21,6 +21,7 @@ def output_bat(path, ssh_vars):
     f = open(path, "w")
     for key, value in ssh_vars.items():
         f.write("set " + key + "=" + value + "\r\n")
+    f.write("echo Agent pid " + ssh_vars["SSH_AGENT_PID"] + "\r\n")
     f.close()
 
 def convert(path):
