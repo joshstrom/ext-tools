@@ -186,6 +186,9 @@ def pull_remote_branch():
     remote_branch_list = get_remote_branches()
     local_branch_list = get_all_local_branches()
     available_branches = [branch for branch in remote_branch_list if branch not in local_branch_list]
+    if len(available_branches) == 0:
+        print("No untracked remote branches.")
+        return
 
     selection = list_query(available_branches, "Available Remote Branches:")
     if selection is None:
