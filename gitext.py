@@ -14,6 +14,19 @@ def is_int(s):
         return False
 
 
+def confirm(prompt):
+    while True:
+        user_input = str(input(prompt).lower())
+        if user_input == "y":
+            return True
+
+        if user_input == "n":
+            return False
+
+        # Anything else:
+        print("Invalid input.")
+
+
 # Returns the name of the current branch as a string. If not a git repo, will print error and exit.
 def get_current_branch_name():
     try:
@@ -23,9 +36,17 @@ def get_current_branch_name():
         sys.exit()
 
 
+def get_all_local_branches():
+    try:
+        branch_list = subprocess.check_output("git branch", shell=False).decode("utf-8")
+        return re.findall(r"^\*?\s+(\S+)$", branch_list, re.MULTILINE)
+    except subprocess.CalledProcessError:
+        print("Done.")  # Error printed by git.
+        sys.exit()
+
 # Returns list of branch names (as list of strings) that are NOT the current branch.
 # If not a git repo, will print error and exit.
-def get_local_branches():
+def get_unselected_local_branches():
     try:
         branch_list = subprocess.check_output("git branch", shell=False).decode("utf-8")
         return re.findall(r"^\s+(\S+)$", branch_list, re.MULTILINE)
@@ -34,10 +55,11 @@ def get_local_branches():
         sys.exit()
 
 
-def get_remote_untracked_branches():
+def get_remote_branches():
     try:
         branch_list = subprocess.check_output("git branch --remote", shell=False).decode("utf-8")
-        return re.findall(r"^\s+(\S+)$", branch_list, re.MULTILINE)
+        branches = re.findall(r"^\s+(\S+)$", branch_list, re.MULTILINE)
+        return [branch.split('/')[-1] for branch in branches]
     except subprocess.CalledProcessError:
         print("Done.")  # Error printed by git.
         sys.exit()
@@ -66,36 +88,41 @@ def has_remote_tracking_branch(local_branch_name):
 # Displays a list of available local branches and prompts the user to select one.
 # Returns the name of the selected branch or None if the user cancelled.
 def select_branch():
-    branch_list = get_local_branches()
+    branch_list = get_unselected_local_branches()
     if len(branch_list) == 0:
-        print("No other branches.")
+        print("No other branches available.")
         return None
 
-    print("Branches:")
-    for i in range(len(branch_list)):
-        print("\t{0}: {1}".format(i, branch_list[i]))
+    return list_query(branch_list, "Branches:")
+
+def list_query(available_options, list_title):
+    if len(available_options) == 0:
+        return None
+
+    print(list_title)
+    for i in range(len(available_options)):
+        print("\t{0}: {1}".format(i, available_options[i]))
 
     branch_num = -1
 
     while True:
-        user_input = str(input("\nSelect branch (q to cancel): ")).lower()
+        user_input = str(input("\nMake selection (q to cancel): ")).lower()
         if user_input == "q":
             return None
         if not is_int(user_input):
-            print("Invalid branch number.")
+            print("Invalid selection.")
             continue
 
         test_branch_num = int(user_input)
-        if test_branch_num < 0 or test_branch_num >= len(branch_list):
-            print("Branch number out of range.")
+        if test_branch_num < 0 or test_branch_num >= len(available_options):
+            print("Selection out of range.")
             continue
 
         # Valid
         branch_num = test_branch_num
         break
 
-    return branch_list[branch_num]
-
+    return available_options[branch_num]
 
 def interactive_checkout():
     current_branch = get_current_branch_name()
@@ -134,21 +161,7 @@ def push_remote():
         print("Done.")
         return
 
-    run_command = False
-    while True:
-        user_input = str(input("Add remote tracking branch 'origin/" + current_branch + "'? (y/n): ")).lower()
-        if user_input == "y":
-            run_command = True
-            break
-        if user_input == "n":
-            run_command = False
-            break
-
-        # Anything else:
-        print("Invalid input.")
-        continue
-
-    if run_command:
+    if confirm("Add remote tracking branch 'origin/" + current_branch + "'? (y/n): "):
         command = "git push --set-upstream origin " + current_branch
         print("Running command: '" + command + "'")
         subprocess.call(command)
@@ -170,12 +183,22 @@ def check_has_remote():
 
 
 def pull_remote_branch():
-    branch_list = get_remote_untracked_branches()
-    print("Branches:")
-    for i in range(len(branch_list)):
-        print("\t{0}: {1}".format(i, branch_list[i]))
+    remote_branch_list = get_remote_branches()
+    local_branch_list = get_all_local_branches()
+    available_branches = [branch for branch in remote_branch_list if branch not in local_branch_list]
 
-    return
+    selection = list_query(available_branches, "Available Remote Branches:")
+    if selection is None:
+        print("Cancelled.")
+        return
+
+    if confirm("Pull remote branch '" + selection + "'? (y/n):"):
+        command = "git checkout -b " + selection + " origin/" + selection
+        print("Running command: '" + command + "'")
+        subprocess.call(command)
+        print("Done.")
+    else:
+        print("Cancelled.")
 
 
 def is_in_sync():
@@ -209,7 +232,7 @@ def print_help():
     print("\t insync - Shows details around branch synchronizing.")
     print("\t help - Prints this message.")
     print("\t version - Prints version of this tool.")
-    # print("\t pullremote - Pull a remote untracked branch.")
+    print("\t pullremote - Pull a remote untracked branch.")
 
 
 def main():
@@ -240,9 +263,9 @@ def main():
     if command == "insync":
         is_in_sync()
         return
-    # if command == "pullremote":
-    #     pull_remote_branch()
-    #     return
+    if command == "pullremote":
+        pull_remote_branch()
+        return
     # ... other commands
     else:
         print("Unrecognized command.")
